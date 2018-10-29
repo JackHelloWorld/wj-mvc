@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wj.dao.mybatis.AuthDao">
+
+	<resultMap type="com.wj.pojo.sys.SysResource" id="resourceMap">
+		<result column="id" property="id" javaType="java.lang.Long" />
+		<result column="r_intro" property="intro" javaType="java.lang.String" />
+		<result column="r_style" property="style" javaType="java.lang.String"/>
+		<result column="r_click" property="clickAction" javaType="java.lang.String"/>
+		<result column="r_icon" property="icon" javaType="java.lang.String"/>
+		<result column="r_sort" property="sort" javaType="java.lang.Integer"/>
+		<result column="r_type" property="type" javaType="java.lang.Integer"/>
+		<result column="r_text" property="text" javaType="java.lang.String"/>
+		<result column="r_url" property="url" javaType="java.lang.String"/>
+		<result column="parent_id" property="parentId" javaType="java.lang.Long"/>
+	</resultMap>
+
+	<select id="findThisResourceByType" resultMap="resourceMap"
+		parameterType="com.wj.dao.utils.DaoParam">
+		SELECT
+			sre.*
+		FROM
+			sys_resource sre,
+			sys_resource_role srer
+		WHERE
+			srer.resource_id = sre.id
+		<if test="type != null">
+			AND sre.r_type = #{type}
+		</if>
+		<if test="roleId != null">
+			AND srer.role_id = #{roleId}
+		</if>
+		<if test="parentId != null">
+			AND sre.parent_id = #{parentId}
+		</if>
+		ORDER BY
+			sre.r_sort ASC
+	</select>
+
+	<select id="countByUrl" resultType="long">
+		SELECT
+			ifnull(count(sre.id),0)
+		FROM
+			sys_resource sre,
+			sys_resource_role srer
+		WHERE
+			srer.resource_id = sre.id
+			AND srer.role_id = #{roleId}
+			and sre.r_url = #{url}
+	</select>
+
+</mapper>

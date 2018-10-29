@@ -1,0 +1,226 @@
+
+<title>字典管理 - 后台管理</title>
+<!-- ajax layout which only needs content area -->
+<div class="page-header">
+	<h1>
+		字典管理
+		<small>
+			<i class="ace-icon fa fa-angle-double-right"></i>
+			系统字典维护
+		</small>
+	</h1>
+</div><!-- /.page-header -->
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget-box widget-color-blue2">
+					<div class="widget-header">
+						<h4 class="widget-title lighter smaller">字典信息</h4>
+						<div style="float: right;padding-top: 5px;padding-right: 5px;">
+							<button style="margin-left: 3px;" :title="action.text" v-for="action in actionList" :class="action.style" @click="methodBind" :click-key = "action.clickAction"><i :class="action.icon"></i></button>
+						</div>
+					</div>
+	
+					<div class="widget-body">
+						<div class="widget-main padding-8">
+							<ul id="dictionaryUl" style="min-height: 200px;" class=" ztree" role="tree"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-8">
+				<div class="widget-box widget-color-blue2">
+					<div class="widget-header">
+						<h4 class="widget-title lighter smaller">操作栏
+							<span v-if="updateData.edit">---</span>
+							<span v-if="updateData.action==1">编辑</span>
+							<span v-if="updateData.action==2">新增</span>
+						</h4>
+						<div></div>
+					</div>
+	
+					<div class="widget-body">
+						<div class="widget-main padding-8">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 字典名称<span class="red">*</span> </label>
+									<div class="col-sm-9">
+										<input placeholder="字典名称" :readonly="!updateData.edit" v-model="updateData.text" class="col-sm-12" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 英文名称 <span class="red">*</span></label>
+									<div class="col-sm-9">
+										<input placeholder="英文名称" :readonly="!updateData.edit" v-model="updateData.enText" class="col-sm-12" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > token<span class="red">*</span> </label>
+									<div class="col-sm-9">
+										<input placeholder="token校验码" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.token" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 值 <span class="red">*</span></label>
+									<div class="col-sm-9">
+										<input placeholder="值" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.value" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 排序 </label>
+									<div class="col-sm-9">
+										<input placeholder="排序" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.sort" type="number" >
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="center">
+										<button :disabled="!updateData.edit" @click="saveInfo" type="button" class="btn btn-sm btn-success">
+											保存
+											<i class="ace-icon fa fa-arrow-right icon-on-right bigger-110"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><!-- /.col -->
+</div><!-- /.row -->
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+	var scripts = [null, null]
+	ace.load_ajax_scripts(scripts, function() {
+	  
+	});
+	$(function(){
+		var href = location.href.split("#");
+		if(href.length > 1){
+			href = href[1];
+		}
+		var menuId = $("[data-url = '"+href+"']").attr("data-id");
+		post(urlConfig.getAction,{id:menuId},function(data){
+	  		actions = data.data;
+	  		initData();
+	  	},function(data){
+	  		
+	  	});
+	});
+	
+	var settings = {
+		data : {
+			simpleData : {
+				enable : true,
+			},
+			key : {
+				title : 'text',
+				name : 'text',
+				children : 'nodes',
+				url : null,
+				click : 'null'
+			}
+		},
+		callback : {
+			onClick : onClick
+		}
+	};
+	
+	var dictionary;
+	
+	function onClick(event, treeId, treeNode, clickFlag){
+		Vue.set(dictionaryVue.updateData,"action",null);
+		Vue.set(dictionaryVue.updateData,'edit',false);
+		Vue.set(dictionaryVue.updateData,'parentToken',treeNode.parentToken);
+		Vue.set(dictionaryVue.updateData,'text',treeNode.text);
+		Vue.set(dictionaryVue.updateData,'id',treeNode.id);
+		Vue.set(dictionaryVue.updateData,'sort',treeNode.sort);
+		Vue.set(dictionaryVue.updateData,'enText',treeNode.enText);
+		Vue.set(dictionaryVue.updateData,'token',treeNode.token);
+		Vue.set(dictionaryVue.updateData,'value',treeNode.value);
+		
+	};
+	
+	var initData = function(){
+		dictionaryVue = new Vue({
+			el : '#page-content',
+			data : {
+				updateData : {edit:false,parentToken:0},
+				actionList : actions
+			},
+			methods : {
+				methodBind : function(e){
+		  			var method = $(e.currentTarget).attr("click-key");
+		  			dictionaryVue[method](e);
+		  		},
+		  		addInfo : function(e){
+		  			var parentToken = dictionaryVue.updateData.token?dictionaryVue.updateData.token:'0';
+		  			dictionaryVue.updateData = {edit:true,parentToken:parentToken,action:2};
+		  		},
+		  		editInfo : function(e){
+		  			if(!dictionaryVue.updateData.id){
+		  				layer.msg("请选择修改的字典",{icon:7});
+		  				return;
+		  			}
+		  			Vue.set(dictionaryVue.updateData,"edit",true);
+		  			Vue.set(dictionaryVue.updateData,"action",1);
+		  		},
+		  		saveInfo:function(e){
+		  			if(dictionaryVue.updateData.action != 1 && dictionaryVue.updateData.action !=2){
+		  				layer.msg("未选择操作",{icon:7});
+		  				return;
+		  			}
+		  			var url = "";
+		  			if(dictionaryVue.updateData.action == 2){
+		  				url = urlConfig.dictionary.saveDictionary;
+		  			}else{
+		  				url = urlConfig.dictionary.updateDictionary;
+		  			}
+		  			post(url,dictionaryVue.updateData,function(data){
+		  				layer.msg("操作成功",{icon:1});
+		  				dictionaryVue.updateData = {edit:false};
+		  				initTree();
+		  			},function(data){
+		  				layer.msg(data.msg,{icon:2});
+		  			});
+		  		},
+		  		deleteInfo : function(e){
+		  			if(!dictionaryVue.updateData.id){
+		  				layer.msg("请选择要删除的字典",{icon:7});
+		  				return;
+		  			}
+					layer.confirm('是否删除,将同时删除子节点？', {
+					  btn: ['删除','取消'],
+					  title:'系统提示',
+					}, function(){
+						post(urlConfig.dictionary.deleteDictionary,{id:dictionaryVue.updateData.id},function(data){
+							layer.msg("删除成功",{icon:1});
+			  				dictionaryVue.updateData = {edit:false};
+			  				initTree();
+			  			},function(data){
+			  				layer.msg(data.msg,{icon:2});
+			  			});
+					}, function(){
+					});
+		  		}
+			},
+			mounted:function(){
+				initTree();
+			}
+		});
+	};
+	
+	function initTree(){
+		post(urlConfig.dictionary.findAllDictionary, {}, function(d) {
+			zNodes = d.data;
+			$.fn.zTree.init($("#dictionaryUl"), settings, zNodes);
+		}, function(d) {
+			layer.msg(data.msg, {
+				icon : 2
+			});
+		});
+	}
+</script>

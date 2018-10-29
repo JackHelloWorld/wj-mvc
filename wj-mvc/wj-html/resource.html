@@ -1,0 +1,253 @@
+
+<title>资源管理 - 后台管理</title>
+<!-- ajax layout which only needs content area -->
+<div class="page-header">
+	<h1>
+		资源管理
+		<small>
+			<i class="ace-icon fa fa-angle-double-right"></i>
+			资源信息编辑调整
+		</small>
+	</h1>
+</div><!-- /.page-header -->
+
+<div class="row">
+	<div class="col-xs-12">
+		<div class="row">
+			<div class="col-sm-4">
+				<div class="widget-box widget-color-blue2">
+					<div class="widget-header">
+						<h4 class="widget-title lighter smaller">资源信息</h4>
+						<div style="float: right;padding-top: 5px;padding-right: 5px;">
+							<button style="margin-left: 3px;" :title="action.text" v-for="action in actionList" :class="action.style" @click="methodBind" :click-key = "action.clickAction"><i :class="action.icon"></i></button>
+						</div>
+					</div>
+	
+					<div class="widget-body">
+						<div class="widget-main padding-8">
+							<ul id="resourceUl" style="min-height: 200px;" class=" ztree" role="tree"></ul>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-8">
+				<div class="widget-box widget-color-blue2">
+					<div class="widget-header">
+						<h4 class="widget-title lighter smaller">操作栏
+							<span v-if="updateData.edit">---</span>
+							<span v-if="updateData.action==1">编辑</span>
+							<span v-if="updateData.action==2">新增</span>
+						</h4>
+						<div></div>
+					</div>
+	
+					<div class="widget-body">
+						<div class="widget-main padding-8">
+							<div class="form-horizontal">
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 资源名称<span class="red">*</span> </label>
+									<div class="col-sm-9">
+										<input placeholder="资源名称" :readonly="!updateData.edit" v-model="updateData.text" class="col-sm-12" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 资源图标<span class="red">*</span> </label>
+									<div class="col-sm-9">
+										<input placeholder="资源图标" :readonly="!updateData.edit" v-model="updateData.icon" class="col-sm-12" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 资源描述 </label>
+									<div class="col-sm-9">
+										<input placeholder="资源描述" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.intro" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > url </label>
+									<div class="col-sm-9">
+										<input placeholder="url" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.url" type="text">
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 排序 </label>
+									<div class="col-sm-9">
+										<input placeholder="排序" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.sort" type="number" >
+									</div>
+								</div>
+								<div class="form-group">
+									<label class="col-sm-2 control-label no-padding-right" > 资源类型 <span class="red">*</span></label>
+									<div class="col-sm-9">
+										<select placeholder="资源类型" :disabled="!updateData.edit" class="col-sm-12" v-model="updateData.type">
+											<option value="">选择资源类型</option>
+											<option value="0">菜单</option>
+											<option value="1">按钮</option>
+										</select>
+									</div>
+								</div>
+								<div class="form-group" v-if="updateData.type==1">
+									<label class="col-sm-2 control-label no-padding-right" > 点击事件 </label>
+									<div class="col-sm-9">
+										<input placeholder="点击事件" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.clickAction" type="text">
+									</div>
+								</div>
+								<div class="form-group" v-if="updateData.type==1">
+									<label class="col-sm-2 control-label no-padding-right" > 资源样式 </label>
+									<div class="col-sm-9">
+										<input placeholder="资源样式" :readonly="!updateData.edit" class="col-sm-12" v-model="updateData.style" type="text">
+									</div>
+								</div>
+								
+								<div class="form-group">
+									<div class="center">
+										<button :disabled="!updateData.edit" @click="saveInfo" type="button" class="btn btn-sm btn-success">
+											保存
+											<i class="ace-icon fa fa-arrow-right icon-on-right bigger-110"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div><!-- /.col -->
+</div><!-- /.row -->
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+	var scripts = [null, null]
+	ace.load_ajax_scripts(scripts, function() {
+	  
+	});
+	$(function(){
+		var href = location.href.split("#");
+		if(href.length > 1){
+			href = href[1];
+		}
+		var menuId = $("[data-url = '"+href+"']").attr("data-id");
+		post(urlConfig.getAction,{id:menuId},function(data){
+	  		actions = data.data;
+	  		initData();
+	  	},function(data){
+	  		
+	  	});
+	});
+	
+	var settings = {
+		data : {
+			simpleData : {
+				enable : true,
+			},
+			key : {
+				title : 'text',
+				name : 'text',
+				children : 'nodes',
+				url : null,
+				click : 'null'
+			}
+		},
+		callback : {
+			onClick : onClick
+		}
+	};
+	
+	var resourceVue;
+	
+	function onClick(event, treeId, treeNode, clickFlag){
+		Vue.set(resourceVue.updateData,"action",null);
+		Vue.set(resourceVue.updateData,'edit',false);
+		Vue.set(resourceVue.updateData,'parentId',treeNode.parentId);
+		Vue.set(resourceVue.updateData,'text',treeNode.text);
+		Vue.set(resourceVue.updateData,'clickAction',treeNode.clickAction);
+		Vue.set(resourceVue.updateData,'id',treeNode.id);
+		Vue.set(resourceVue.updateData,'url',treeNode.url);
+		Vue.set(resourceVue.updateData,'icon',treeNode.icon);
+		Vue.set(resourceVue.updateData,'intro',treeNode.intro);
+		Vue.set(resourceVue.updateData,'sort',treeNode.sort);
+		Vue.set(resourceVue.updateData,'type',treeNode.type);
+		Vue.set(resourceVue.updateData,'style',treeNode.style);
+		
+	};
+	
+	var initData = function(){
+		resourceVue = new Vue({
+			el : '#page-content',
+			data : {
+				updateData : {edit:false,parentId:0},
+				actionList : actions
+			},
+			methods : {
+				methodBind : function(e){
+		  			var method = $(e.currentTarget).attr("click-key");
+		  			resourceVue[method](e);
+		  		},
+		  		addInfo : function(e){
+		  			var parentId = resourceVue.updateData.id ? resourceVue.updateData.id:0;
+		  			resourceVue.updateData = {edit:true,parentId:parentId,action:2};
+		  		},
+		  		editInfo : function(e){
+		  			if(!resourceVue.updateData.id){
+		  				layer.msg("请选择修改的资源",{icon:7});
+		  				return;
+		  			}
+		  			Vue.set(resourceVue.updateData,"edit",true);
+		  			Vue.set(resourceVue.updateData,"action",1);
+		  			
+		  		},
+		  		saveInfo:function(e){
+		  			if(resourceVue.updateData.action != 1 && resourceVue.updateData.action !=2){
+		  				layer.msg("未选择操作",{icon:7});
+		  				return;
+		  			}
+		  			var url = "";
+		  			if(resourceVue.updateData.action == 2){
+		  				url = urlConfig.resource.saveResource;
+		  			}else{
+		  				url = urlConfig.resource.updateResource;
+		  			}
+		  			post(url,resourceVue.updateData,function(data){
+		  				layer.msg("操作成功",{icon:1});
+		  				resourceVue.updateData = {edit:false};
+		  				initTree();
+		  			},function(data){
+		  				layer.msg(data.msg,{icon:2});
+		  			});
+		  		},
+		  		deleteInfo : function(e){
+		  			if(!resourceVue.updateData.id){
+		  				layer.msg("请选择要删除的资源",{icon:7});
+		  				return;
+		  			}
+					layer.confirm('是否删除,将同时删除子节点？', {
+					  btn: ['删除','取消'],
+					  title:'系统提示',
+					}, function(){
+						post(urlConfig.resource.deleteResource,{id:resourceVue.updateData.id},function(data){
+							layer.msg("删除成功",{icon:1});
+			  				resourceVue.updateData = {edit:false};
+			  				initTree();
+			  			},function(data){
+			  				layer.msg(data.msg,{icon:2});
+			  			});
+					}, function(){
+					});
+		  		}
+			},
+			mounted:function(){
+				initTree();
+			}
+		});
+	};
+	
+	function initTree(){
+		post(urlConfig.resource.findAllMenus, {}, function(d) {
+			zNodes = d.data;
+			$.fn.zTree.init($("#resourceUl"), settings, zNodes);
+		}, function(d) {
+			layer.msg(data.msg, {
+				icon : 2
+			});
+		});
+	}
+</script>

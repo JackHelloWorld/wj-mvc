@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wj.dao.mybatis.ListDao">
+
+	<select id="roleList" resultType="hashMap" parameterType="com.wj.pojo.sys.Role">
+		SELECT
+			sre.*, sur.u_name AS createUserName
+		FROM
+			sys_role sre,
+			sys_user sur
+		WHERE
+			sur.id = sre.create_user
+		AND sre.r_status = 0
+		<if test="name != null and name != ''">
+			and sre.r_name like #{name}
+		</if>
+		<if test="intro != null and intro != ''">
+			and sre.r_intro like #{intro}
+		</if>
+	</select>
+
+	<select id="sysUserList" resultType="hashMap" parameterType="com.wj.pojo.sys.SysUser">
+		SELECT
+			sur.*, sur_c.u_name AS createUserName,
+			sre.r_name AS roleName
+		FROM
+			sys_user sur,
+			sys_role sre,
+			sys_user sur_c
+		WHERE
+			sur.u_create_user_id = sur_c.id
+		AND sre.id = sur.u_role_id
+		and sur.u_status != 2
+		and sur.u_is_admin = #{isAdmin}
+		<if test="roleId != null and roleId != ''">
+			and sre.id = #{roleId}
+		</if>
+		<if test="createUserName != null and createUserName != ''">
+			and sre.r_name like #{createUserName}
+		</if>
+		<if test="status != null">
+			and sur.u_status = #{status}
+		</if>
+		<if test="loginName != null and loginName != ''">
+			and sur.u_login_name like #{loginName}
+		</if>
+		<if test="name != null and name != ''">
+			and sur.u_name like #{name}
+		</if>
+		order by sur.u_create_time desc
+	</select>
+
+</mapper>

@@ -1,0 +1,440 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Stict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-
+strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang = "zh-CN">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+		<title>管理系统</title>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+
+		<!-- ztree -->
+		<link rel="stylesheet" href="assets/plugins/ztree/css/zTreeStyle/zTreeStyle.css" type="text/css">
+
+		<!-- bootstrap & fontawesome -->
+		<link rel="stylesheet" href="assets/css/bootstrap.min.css" />
+		<link rel="stylesheet" href="assets/css/font-awesome.min.css" />
+		
+		<!-- text fonts -->
+		<link rel="stylesheet" href="assets/css/ace-fonts.css" />
+
+		<!-- ace styles -->
+		<link rel="stylesheet" href="assets/css/ace.min.css" id="main-ace-style" />
+
+		<!--[if lte IE 9]>
+			<link rel="stylesheet" href="assets/css/ace-part2.min.css" />
+		<![endif]-->
+		<link rel="stylesheet" href="assets/css/ace-skins.min.css" />
+		<link rel="stylesheet" href="assets/css/ace-rtl.min.css" />
+
+		<!--[if lte IE 9]>
+		  <link rel="stylesheet" href="assets/css/ace-ie.min.css" />
+		<![endif]-->
+
+		<!-- ace settings handler -->
+		<script src="assets/js/ace-extra.min.js"></script>
+
+		<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+
+		<!--[if lte IE 8]>
+		<script src="assets/js/html5shiv.js"></script>
+		<script src="assets/js/respond.min.js"></script>
+		<![endif]-->
+		<style type="text/css">
+			.page-header h1{text-align: left;}
+		</style>
+	</head>
+
+	<body class="no-skin">
+		<!-- #section:basics/navbar.layout -->
+		<div id="navbar" class="navbar navbar-default">
+			<script type="text/javascript">
+				try{ace.settings.check('navbar' , 'fixed')}catch(e){}
+			</script>
+			<div id="updatePasswordModel" style="display: none;padding-top: 20px;" class="col-sm-12">
+				<div class="form-horizontal">
+					<div class="form-group">
+							<label class="col-sm-2 control-label no-padding-right">原密码</label>
+							<div class="col-sm-10">
+								<input placeholder="请输入原密码" style="width: 100%;" v-model="updatePasswordData.oldpass" class="" type="password"/>						</div>
+					</div>
+					<div class="form-group">
+							<label class="col-sm-2 control-label no-padding-right">新密码</label>
+							<div class="col-sm-10">
+								<input placeholder="请输入新密码" style="width: 100%;" v-model="updatePasswordData.newpass" class="" type="password"/>						</div>
+					</div>
+					<div class="form-group">
+							<label class="col-sm-2 control-label no-padding-right">确认输入</label>
+							<div class="col-sm-10">
+								<input placeholder="再次输入新密码" style="width: 100%;" v-model="updatePasswordData.newpass1" class="" type="password"/>						</div>
+					</div>
+				</div>
+			</div>
+			<div class="navbar-container" id="navbar-container">
+				<!-- #section:basics/sidebar.mobile.toggle -->
+				<button type="button" class="navbar-toggle menu-toggler pull-left" id="menu-toggler">
+					<span class="sr-only">隐藏显示边栏</span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+
+					<span class="icon-bar"></span>
+				</button>
+
+				<!-- /section:basics/sidebar.mobile.toggle -->
+				<div class="navbar-header pull-left">
+					<!-- #section:basics/navbar.layout.brand -->
+					<a href="./index.html" class="navbar-brand">
+						<small>
+							<i class="fa fa-leaf"></i>
+							<span v-html="companyName"></span>
+						</small>
+					</a>
+
+					<!-- /section:basics/navbar.layout.brand -->
+
+					<!-- #section:basics/navbar.toggle -->
+
+					<!-- /section:basics/navbar.toggle -->
+				</div>
+
+				<!-- #section:basics/navbar.dropdown -->
+				<div class="navbar-buttons navbar-header pull-right" role="navigation">
+					<input type="file" id="titleImg" onchange="imgChange(this)" class="hidden" accept="image/*" />
+					<ul class="nav ace-nav">
+
+						<!-- #section:basics/navbar.user_menu -->
+						<li class="light-blue">
+							<a data-toggle="dropdown" href="#" class="dropdown-toggle">
+								<img class="nav-user-photo" :src="user.profile == null ? 'assets/avatars/user.png' : user.profile" alt="头像" />
+								<span class="user-info">
+									<small>欢迎使用:</small>
+									<span v-html="user.name"></span>
+								</span>
+
+								<i class="ace-icon fa fa-caret-down"></i>
+							</a>
+
+							<ul class="user-menu dropdown-menu-right dropdown-menu dropdown-yellow dropdown-caret dropdown-close">
+								<li>
+									<a href="javascript:;" @click="updatePassword">
+										<i class="ace-icon fa fa-cog"></i>
+										修改密码
+									</a>
+								</li>
+								
+								<li>
+									<a href="javascript:;" onclick="$('#titleImg').click();return false;">
+										<i class="ace-icon glyphicon glyphicon-user"></i>
+										修改头像
+									</a>
+								</li>
+
+
+								<li>
+									<a href="javascript:;" @click="exitSys">
+										<i class="ace-icon fa fa-power-off"></i>
+										退出
+									</a>
+								</li>
+							</ul>
+						</li>
+
+						<!-- /section:basics/navbar.user_menu -->
+					</ul>
+				</div>
+
+				<!-- /section:basics/navbar.dropdown -->
+			</div><!-- /.navbar-container -->
+		</div>
+
+		<!-- /section:basics/navbar.layout -->
+		<div class="main-container" id="main-container">
+			<script type="text/javascript">
+				try{ace.settings.check('main-container' , 'fixed')}catch(e){}
+			</script>
+
+			<!-- #section:basics/sidebar -->
+			<div id="sidebar" class="sidebar responsive">
+				<script type="text/javascript">
+					try{ace.settings.check('sidebar' , 'fixed')}catch(e){}
+				</script>
+
+
+				<ul class="nav nav-list">
+					<li class="">
+						<a data-url="page/home" href="index.html#page/home">
+							<i class="menu-icon fa fa-tachometer"></i>
+							<span class="menu-text"> 控制中心 </span>
+						</a>
+
+						<b class="arrow"></b>
+					</li>
+
+					<li class="" v-for="menu in menus" @click="showNodes">
+						<a :data-id="menu.id" :data-url="menu.nodes.length > 0 ? null : ('page' + menu.url)"  :href="menu.nodes.length > 0 ? ('javascript:;') : ('index.html#page'+ menu.url)">
+							<i :class="menu.icon"></i>
+							<span class="menu-text" v-html="menu.text"></span>
+
+							<b v-if="menu.nodes.length > 0" class="arrow fa fa-angle-down"></b>
+						</a>
+
+						<b class="arrow"></b>
+
+						<ul class="submenu" v-if="menu.nodes.length > 0">
+							<li class="" v-for="node in menu.nodes" @click="showNodes">
+								<a :data-id="node.id" :data-url="node.nodes.length>0 ? 'javascript:;' : 'page' + node.url"  :href="node.nodes.length>0 ? 'javascript:;' : ('index.html#page'+ node.url)">
+									<i :class="node.icon"></i>
+									<span v-html="node.text"></span>
+									<b v-if="node.nodes.length > 0" class="arrow fa fa-angle-down"></b>
+								</a>
+
+								<b class="arrow"></b>
+								<ul class="submenu" v-if="node.nodes.length > 0">
+									<li class="" v-for="nn in node.nodes" @click="showNodes">
+										<a :data-id="nn.id" :data-url="nn.nodes.length>0 ? 'javascript:;' : 'page' + nn.url" :href="nn.nodes.length>0 ? 'javascript:;' : 'index.html#page'+ nn.url">
+											<i class="menu-icon fa fa-leaf green"></i>
+											<span v-html="nn.text"></span>
+										</a>
+
+										<b class="arrow"></b>
+									</li>
+								</ul>
+							</li>
+						</ul>
+					</li>
+				</ul><!-- /.nav-list -->
+
+				<!-- #section:basics/sidebar.layout.minimize -->
+				<div class="sidebar-toggle sidebar-collapse" id="sidebar-collapse">
+					<i class="ace-icon fa fa-angle-double-left" data-icon1="ace-icon fa fa-angle-double-left" data-icon2="ace-icon fa fa-angle-double-right"></i>
+				</div>
+
+				<!-- /section:basics/sidebar.layout.minimize -->
+				<script type="text/javascript">
+					try{ace.settings.check('sidebar' , 'collapsed')}catch(e){}
+				</script>
+			</div>
+
+			<!-- /section:basics/sidebar -->
+			<div class="main-content">
+				<!-- #section:basics/content.breadcrumbs -->
+				<div class="breadcrumbs" id="breadcrumbs">
+					<script type="text/javascript">
+						try{ace.settings.check('breadcrumbs' , 'fixed')}catch(e){}
+					</script>
+
+					<ul class="breadcrumb">
+						<li>
+							<i class="ace-icon fa fa-home home-icon"></i>
+							<a href="./index.html">首页</a>
+						</li>
+					</ul><!-- /.breadcrumb -->
+
+					<!-- #section:basics/content.searchbox -->
+					<div class="nav-search" id="nav-search">
+						<div class="form-search">
+							<span class="input-icon">
+								<input type="text" placeholder="搜索菜单..." class="nav-search-input" id="nav-search-input" autocomplete="off" />
+								<i class="ace-icon fa fa-search nav-search-icon"></i>
+							</span>
+						</div>
+					</div><!-- /.nav-search -->
+
+					<!-- /section:basics/content.searchbox -->
+				</div>
+
+				<!-- /section:basics/content.breadcrumbs -->
+				<div class="page-content" id="page-content">
+					<div class="page-content-area" style="opacity: 1">
+						<!-- ajax content goes here -->
+					</div><!-- /.page-content-area -->
+				</div><!-- /.page-content -->
+			</div><!-- /.main-content -->
+
+			<div class="footer" id="footer">
+				<div class="footer-inner">
+					<!-- #section:basics/footer -->
+					<div class="footer-content">
+						<span class="bigger-120">
+							<span class="blue bolder" v-html="companyName"></span>
+							<span v-html="version"></span> &copy; 2015-2018
+						</span>
+					</div>
+
+					<!-- /section:basics/footer -->
+				</div>
+			</div>
+
+			<a href="javascript:;" id="btn-scroll-up" class="btn-scroll-up btn btn-sm btn-inverse">
+				<i class="ace-icon fa fa-angle-double-up icon-only bigger-110"></i>
+			</a>
+		</div><!-- /.main-container -->
+		
+		
+		<!-- basic scripts -->
+
+		<!--[if !IE]> -->
+		<script type="text/javascript">
+			window.jQuery || document.write("<script src='assets/js/jquery.min.js'>"+"<"+"/script>");
+		</script>
+
+		<!-- <![endif]-->
+
+		<!--[if IE]>
+			<script type="text/javascript">
+			 	window.jQuery || document.write("<script src='assets/js/jquery1x.min.js'>"+"<"+"/script>");
+			</script>
+		<![endif]-->
+		<script type="text/javascript">
+			if('ontouchstart' in document.documentElement) document.write("<script src='assets/js/jquery.mobile.custom.min.js'>"+"<"+"/script>");
+		</script>
+		<script src="assets/js/bootstrap.min.js"></script>
+
+		<!-- ace scripts -->
+		<script src="assets/js/ace-elements.min.js"></script>
+		<script src="assets/js/ace.min.js"></script>
+		<script src="assets/plugins/vue.min.js"></script>
+		<script src="assets/plugins/config.js"></script>
+		<script src="assets/plugins/tools.js"></script>
+		<script src="assets/plugins/layer/layer.js"></script>
+		<script src="assets/js/jquery.dataTables.min.js"></script>
+		<script src="assets/js/jquery.dataTables.bootstrap.js"></script>
+		<script src="assets/js/jquery-ui.custom.min.js"></script>
+		<script src="assets/js/jquery.ui.touch-punch.min.js"></script>
+		<script src="assets/js/jquery.easypiechart.min.js"></script>
+		<script src="assets/js/jquery.sparkline.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.pie.min.js"></script>
+		<script src="assets/js/flot/jquery.flot.resize.min.js"></script>
+		<script type="text/javascript" src="assets/plugins/ztree/js/jquery.ztree.core.js"></script>
+		<script type="text/javascript" src="assets/plugins/ztree/js/jquery.ztree.excheck.js"></script>
+		<!--[if lte IE 8]>
+		  <script src="assets/js/excanvas.min.js"></script>
+		<![endif]-->
+		<script type="text/javascript">
+			var toLoginPage = function(){
+				location.href='./login.html';
+			};
+			
+			var imgChange = function(t){
+				uploadImg(t,function(data){
+					post(urlConfig.common.updateProfile,{profile : data.data.full_path},function(d){
+						navbar.user.profile = data.data.full_path;
+						layer.msg("上传头像成功",{icon:1});
+					},function(d){
+						layer.msg(d.msg,{icon:2});
+					});
+					
+				},function(data){
+					layer.msg('头像上传失败',{icon:2});
+				});
+			}
+			
+			var actions = [];
+			//Load content via ajax
+			jQuery(function($) {
+				var sidebar = new Vue({
+					el : '#sidebar',
+					data : {
+						menus : []
+					},
+					methods:{
+						showNodes : function(e){
+							$(e.currentTarget).find("ul:eq(0)").toggle(200);
+							e.cancelBubble = true;
+						}
+					},
+					mounted : function(){
+						post(urlConfig.getMenus,{},function(data){
+							sidebar.menus = data.data;
+							 if('enable_ajax_content' in ace) {
+								var options = {
+								  content_url: function(url) {
+									if(!url.match(/^page\//)) return false;
+									var path = document.location.pathname;
+									if(path.match(/index\.html/)) return path.replace(/index\.html/, url.replace(/^page\//, '')+'.html') ;
+									return path + "?" + url.replace(/\//, "=");
+								  },
+								  default_url: 'page/home',//default url
+								  loading_icon : 'false'
+								}
+								ace.enable_ajax_content($, options);
+							  }
+							 ace.handle_side_menu($);
+							ace.general_vars($);
+						},function(data){
+							
+						});
+					}
+				});
+			});
+		</script>
+		<script type="application/javascript">
+			var navbar;
+			$(function(){
+				navbar = new Vue({
+					 	el : '#navbar',
+					 	data : {
+					 		companyName : config.companyName,
+					 		user : {},
+					 		updatePasswordData : {}
+					 	},
+					 	mounted : function(){
+				 			post(urlConfig.getPersonalInfo,{},function(data){
+				 				navbar.user = data.data;
+				 			},function(data){
+				 				
+				 			});
+					 	},
+					 	methods : {
+					 		exitSys : function(e){
+						 		post(urlConfig.userExit,{},function(data){
+					 				location.href='./login.html';
+					 			},function(data){
+					 				
+					 			});
+					 		},
+					 		updatePassword : function(e){
+					 			Vue.set(navbar,"updatePasswordData",{});
+					 			layer.open({
+								  type: 1,
+								  title : '修改密码',
+								  skin: 'layui-layer-rim', //加上边框
+								  area: ['50%', '60%'], //宽高
+								  content: $("#updatePasswordModel"),
+								  btn:['修改','取消'],
+								  yes : function(index){
+								  	if(navbar.updatePasswordData.newpass != navbar.updatePasswordData.newpass1){
+								  		layer.msg("两次密码输入不一致",{icon:7});
+								  		return;
+								  	}
+								  	post(urlConfig.updatePassword,navbar.updatePasswordData,function(d){
+								  		layer.msg("修改成功",{icon:1});
+								  		layer.close(index);
+								  	},function(d){
+								  		layer.msg(d.msg,{icon:2});
+								  	});
+								  },
+								});
+					 		}
+					 	}
+				});
+				var footer = new Vue({
+					 	el : '#footer',
+					 	data : {
+					 		companyName : config.companyName,
+					 		version : config.version
+					 	},
+					 	mounted : function(){
+				 			
+					 	}
+				});
+			});
+			$(function(){
+				
+			});
+		</script>
+	</body>
+</html>

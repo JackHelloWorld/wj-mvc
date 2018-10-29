@@ -1,0 +1,405 @@
+<title>用户管理</title>
+<div class="page-header">
+	<h1>
+		用户管理 <small> <i class="ace-icon fa fa-angle-double-right"></i>
+			后台操作员信息管理
+		</small>
+	</h1>
+</div>
+<div class="row">
+	<div class="col-xs-12">
+		<!-- 页面内容开始 -->
+		<div>
+			<div id="dynamic-table_wrapper" class="dataTables_wrapper form-inline no-footer">
+				<div class="table-header col-xs-12" style="padding-left: 0px;">
+					<div class="col-xs-8">
+						<button class="btn btn-sm btn-success" onclick="showQueryInfo()"><i class="fa fa-search"></i>搜索</button>
+						<button style="margin-right: 3px;" v-for="action in actionList" :class="action.style  + ' btn-sm '" @click="methodBind(action.clickAction)"><i :class="action.icon"></i><span v-html="action.text"></span></button>
+					</div>
+					<div class="col-xs-4">
+						<div class="dataTables_filter">
+							<label>显示
+								<select @change="search" data-number="1" v-model="query.pageSize" class="form-control input-sm">
+									<option value="10">10</option>
+									<option value="25">25</option>
+									<option value="50">50</option>
+									<option value="100">100</option>
+								</select> 条
+							</label>
+						</div>
+					</div>
+				</div>
+				<table class="table table-striped table-bordered table-hover dataTable" >
+					<thead>
+						<tr>
+							<th class="center">选择</th>
+							<th>用户名称</th>
+							<th>用户角色</th>
+							<th>登录名</th>
+							<th>最近登录时间</th>
+							<th>创建人</th>
+							<th>创建时间</th>
+							<th>状态</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr v-for="(info,index) in page.list" :class="(index % 2 ==0?'odd':'even') + (index == selected ? ' active':'')" @click="selectRow(index)">
+							<td class="center">
+								<input type="checkbox" :checked="index == selected">
+							</td>
+							<td  v-html="info.name"></td>
+							<td  v-html="info.roleName"></td>
+							<td  v-html="info.loginName"></td>
+							<td  v-html="info.lastLoginTime"></td>
+							<td  v-html="info.createUserName"></td>
+							<td  v-html="info.createTime"></td>
+							<td>
+								<span v-if="info.status == 0" class="label label-sm label-success">正常</span>
+								<span v-if="info.status == 1" class="label label-sm label-warning">已停用</span>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="dataTables_info" id="dynamic-table_info" role="status"
+							aria-live="polite">显示<span v-html="page.startRow"></span>到<span v-html="page.endRow"></span>条  共 <span v-html="page.total"></span> 条</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="dataTables_paginate paging_simple_numbers">
+							<ul class="pagination">
+								<li :data-number="page.prePage" @click="search" :class="'paginate_button' + (page.hasPreviousPage? '' : ' disabled')"><a href="javascript:;">上一页</a></li>
+								<li v-for="num in page.navigatepageNums" @click="search" :data-number="num" :class="'paginate_button'+(page.pageNum == num? ' active' : '')"><a href="javascript:;" v-html="num"></a></li>
+								<li :data-number="page.nextPage" @click="search" :class="'paginate_button' + (page.hasNextPage? '' : ' disabled')" ><a href="javascript:;">下一页</a></li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- 页面内容结束 -->
+	</div>
+	<!-- /.col -->
+</div>
+<!-- /.row -->
+<div id="updateModel" style="display: none;padding-top: 20px;" class="col-sm-12">
+	<div class="form-horizontal">
+		<div class="col-sm-12">
+			
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">登录名<span class="red">*</span></label>
+				<div class="col-sm-10">
+					<input placeholder="登录名" v-model="updateData.loginName" class="col-sm-12" type="text">
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">用户名<span class="red">*</span></label>
+				<div class="col-sm-10">
+					<input placeholder="用户名" v-model="updateData.name" class="col-sm-12" type="text">
+				</div>
+			</div>
+			
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">角色<span class="red">*</span></label>
+				<div class="col-sm-10">
+					<select v-model="updateData.roleId" class="col-sm-12">
+						<option value=""></option>
+						<option :value="info.id" v-html="info.name" v-for="info in roleList"></option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="queryModel" style="display: none;padding-top: 20px;" class="col-sm-12">
+	<div class="form-horizontal">
+		<div class="col-sm-12">
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">用户名</label>
+				<div class="col-sm-10">
+					<input placeholder="用户名" v-model="query.name" class="col-sm-12" type="text">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">登录名</label>
+				<div class="col-sm-10">
+					<input placeholder="登录名" v-model="query.loginName" class="col-sm-12" type="text">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">创建人</label>
+				<div class="col-sm-10">
+					<input placeholder="创建人" v-model="query.createUserName" class="col-sm-12" type="text">
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">状态</label>
+				<div class="col-sm-10">
+					<select v-model="query.status" class="col-sm-12">
+						<option value=""></option>
+						<option value="0">正常</option>
+						<option value="1">已停用</option>
+					</select>
+				</div>
+			</div>
+		
+			<div class="form-group">
+				<label class="col-sm-2 control-label no-padding-right" for="form-field-1">角色</label>
+				<div class="col-sm-10">
+					<select v-model="query.roleId" class="col-sm-12">
+						<option value=""></option>
+						<option :value="info.id" v-html="info.name" v-for="info in roleList"></option>
+					</select>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- page specific plugin scripts -->
+<script type="text/javascript">
+	var scripts = []
+	var pageContentVue;
+
+	ace.load_ajax_scripts(scripts, function() {
+	 	
+	});
+	
+	$(function(){
+		var href = location.href.split("#");
+		if(href.length > 1){
+			href = href[1];
+		}
+		var menuId = $("[data-url = '"+href+"']").attr("data-id");
+		post(urlConfig.getAction,{id:menuId},function(data){
+	  		actions = data.data;
+	  		initData();
+	  	},function(data){
+	  		
+	  	});
+	});
+	
+	var initData = function(){
+		pageContentVue = new Vue({
+		  	el : '#page-content',
+		  	data : {
+		  		page : {},
+		  		query : {
+		  			name : '',
+		  			roleId : '',
+		  			loginName : '',
+		  			createUserName : '',
+		  			status : '',
+		  			pageSize : 10,
+		  			pageNumber : 1,
+		  		},
+		  		actionList : actions,
+		  		updateData : {},
+		  		roleList : [],
+		  		selected : null
+		  	},
+		  	methods : {
+		  		methodBind : function(c){
+		  			window[c]();
+		  		},
+		  		selectRow : function(index){
+		  			pageContentVue.selected=index;
+		  		},
+		  		search : function(e){
+		  			var pageNumber = $(e.currentTarget).attr("data-number");
+		  			if(pageNumber < 1){return;}
+		  			selected=null;
+		  			pageContentVue.query.pageNumber = pageNumber;
+		  			if((pageContentVue.page.pages < pageNumber) && pageNumber != 1){
+		  				return;
+		  			}
+		  			query();
+		  		},
+		  		
+		  	},
+		  	mounted : function(){
+		  		post(urlConfig.webuser.findRoles,{},function(data){
+		  			pageContentVue.roleList = data.data;
+		  		},function(data){
+		  			
+		  		});
+		  		post(urlConfig.webuser.list,this.query,function(data){
+		  			pageContentVue.page = data.data;
+	  			},function(data){
+	  				
+	  			});
+		  	}
+	  	});
+	};
+	
+	var query = function(){
+		pageContentVue.selected = null;
+		post(urlConfig.webuser.list,pageContentVue.query,function(data){
+			pageContentVue.page = data.data;
+		},function(data){
+			
+		});
+	};
+	
+	var queryAll = function(){
+		pageContentVue.query.pageNumber = 1;
+		query();
+	}
+	
+	var updateInfo = function(){
+		if(pageContentVue.selected == null){
+			layer.msg('请选择需要修改的信息',{icon:7});
+			return;
+		}
+		post(urlConfig.webuser.updateInfo,{id:pageContentVue.page.list[pageContentVue.selected].id},function(data){
+			delete data.data.createTime;
+			delete data.data.lastLoginTime;
+			delete data.data.isAdmin;
+			pageContentVue.updateData = data.data;
+			//页面层
+			layer.open({
+			  type: 1,
+			  title : '修改信息',
+			  skin: 'layui-layer-rim', //加上边框
+			  area: ['40%', '60%'], //宽高
+			  content: $("#updateModel"),
+			  btn:['保存','取消'],
+			  yes : function(index){
+			  	post(urlConfig.webuser.update,pageContentVue.updateData,function(d){
+			  		layer.msg("修改成功",{icon:1});
+			  		queryAll();
+			  		layer.close(index);
+			  	},function(d){
+			  		layer.msg(d.msg,{icon:2});
+			  	});
+			  },
+			});
+		},function(data){
+			
+		});
+	};
+	
+	var success = function(){
+		if(pageContentVue.selected == null){
+			layer.msg('请选择需要操作的信息',{icon:7});
+			return;
+		}
+		post(urlConfig.webuser.success,{id:pageContentVue.page.list[pageContentVue.selected].id},function(d){
+	  		layer.msg("修改成功",{icon:1});
+	  		queryAll();
+	  		layer.close(index);
+	  	},function(d){
+	  		layer.msg(d.msg,{icon:2});
+	  	});
+	};
+	
+	var success = function(){
+		
+		if(pageContentVue.selected == null){
+			layer.msg('请选择需要操作的信息',{icon:7});
+			return;
+		}
+		var id = pageContentVue.page.list[pageContentVue.selected].id;
+		layer.confirm('是否启用？', {
+		  btn: ['启用','取消'] //按钮
+		}, function(index){
+		  	post(urlConfig.webuser.success,{id:id},function(d){
+		  		layer.msg("操作成功",{icon:1});
+		  		queryAll();
+		  		layer.close(index);
+		  	},function(d){
+		  		layer.msg(d.msg,{icon:2});
+		  	});
+		}, function(){
+		  
+		});
+	
+	};
+	
+	var blockInfo = function(){
+		
+		if(pageContentVue.selected == null){
+			layer.msg('请选择需要操作的信息',{icon:7});
+			return;
+		}
+		var id = pageContentVue.page.list[pageContentVue.selected].id;
+		layer.confirm('是否停用？', {
+		  btn: ['停用','取消'] //按钮
+		}, function(index){
+		  	post(urlConfig.webuser.block,{id:id},function(d){
+		  		layer.msg("操作成功",{icon:1});
+		  		queryAll();
+		  		layer.close(index);
+		  	},function(d){
+		  		layer.msg(d.msg,{icon:2});
+		  	});
+		}, function(){
+		  
+		});
+	
+	};
+
+	var saveInfo = function(){
+		pageContentVue.updateData = {};
+		//页面层
+		layer.open({
+		  type: 1,
+		  title : '新增信息',
+		  skin: 'layui-layer-rim', //加上边框
+		  area: ['40%', '60%'], //宽高
+		  content: $("#updateModel"),
+		  btn:['保存','取消'],
+		  yes : function(index){
+		  	post(urlConfig.webuser.save,pageContentVue.updateData,function(d){
+		  		layer.msg("新增成功",{icon:1});
+		  		pageContentVue.query.pageNumber = 1;
+		  		query();
+		  		layer.close(index);
+		  	},function(d){
+		  		layer.msg(d.msg,{icon:2});
+		  	});
+		  },
+		});
+	};
+	
+	var deleteInfo = function(){
+		if(pageContentVue.selected == null){
+			layer.msg('请选择需要删除的信息',{icon:7});
+			return;
+		}
+		var id = pageContentVue.page.list[pageContentVue.selected].id;
+		layer.confirm('是否删除？', {
+		  btn: ['删除','取消'] //按钮
+		}, function(index){
+		  	post(urlConfig.webuser.deleteInfo,{id:id},function(d){
+		  		layer.msg("删除成功",{icon:1});
+		  		queryAll();
+		  		layer.close(index);
+		  	},function(d){
+		  		layer.msg(d.msg,{icon:2});
+		  	});
+		}, function(){
+		  
+		});
+	};
+	
+	var showQueryInfo = function(){
+		//页面层
+		layer.open({
+		  type: 1,
+		  title : '查询',
+		  skin: 'layui-layer-rim', //加上边框
+		  area: ['40%', '60%'], //宽高
+		  content: $("#queryModel"),
+		  btn:['查询','取消'],
+		  yes : function(index){
+		  	queryAll();
+		  	layer.close(index);
+		  },
+		});
+	}
+	
+</script>
