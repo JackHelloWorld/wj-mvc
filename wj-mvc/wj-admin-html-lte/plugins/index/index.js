@@ -1,6 +1,5 @@
 $(function() {
 	$("#homeUrl").attr("href", '#' + encryptUrl('page/home'));
-	addClick($("#homeUrl"));
 	initUrl();
 	post(urlConfig.getMenus, {}, function(data) {
 		actionMenus(data.data);
@@ -35,7 +34,6 @@ var initMenus = function(menus, $li) {
 			$a.append('<span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>');
 			initMenus(menu.nodes, li);
 		} else {
-			addClick($a);
 		}
 	}
 }
@@ -47,7 +45,6 @@ var selectMenus = function(u) {
 	$("#page-menu-bar").html("");
 	var $li = $('<li></li>');
 	var $a = $('<a href="#' + encryptUrl('page/home') + '"><i class="fa fa-dashboard"></i> 首页</a>');
-	addClick($a);
 	$li.append($a);
 	$("#page-menu-bar").append($li)
 	for(var i = aa.length - 1; i >= 0; i--) {
@@ -100,15 +97,6 @@ var selectMenus = function(u) {
 	});
 };
 
-var addClick = function($a) {
-	$a.click(function() {
-		var href = $(this).attr("href");
-		if(href != null && href != '') {
-			selectMenus(href.substring(1));
-		}
-	});
-}
-
 var actionMenus = function(menus) {
 	if(menus) {
 		for(var i = 0; i < menus.length; i++) {
@@ -125,8 +113,6 @@ var actionMenus = function(menus) {
 				li.addClass("treeview");
 				$a.append('<span class="pull-right-container"><i class="fa fa-angle-left pull-right"></i></span>');
 				initMenus(menu.nodes, li);
-			} else {
-				addClick($a);
 			}
 		}
 	}
@@ -139,3 +125,11 @@ var encryptUrl = function(url) {
 var decodeUrl = function(url) {
 	return window.atob(url);
 };
+
+
+window.addEventListener('hashchange', function(){
+    var href = window.location.href.split("#")[1];
+	if(href != null && href != '') {
+		selectMenus(href);
+	}
+})
