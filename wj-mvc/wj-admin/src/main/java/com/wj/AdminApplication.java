@@ -51,5 +51,5 @@ public class AdminApplication {
         pageHelper.setProperties(properties);
         return pageHelper;
     }
-	
+    
 }
